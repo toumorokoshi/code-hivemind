@@ -35,7 +35,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "package": "npx @vscode/vsce package --allow-missing-repository"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
@@ -44,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.11.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "mocha": "^10.2.0",

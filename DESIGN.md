@@ -32,3 +32,28 @@ The proposed scope includes:
 The scope does not include:
 
 - editor-specific configuration (e.g. antigravity's agent manager settings).
+
+## Implementation details
+
+### Synchronization behavior
+
+The synchronization is bi-directional, in real-time:
+
+- as hotkeys are updated in the current editor, they are updated in the source editor.
+- as hotkeys are updated in the source editor, they are updated in the current editor.
+
+As such, both files are watched for changes, and updated in real-time. Doing so prevents the need for dealing with conflict resolution.
+
+As the editor starts, the hivemind extension should check the source file for updates and synchronize the current editor.
+
+### Synchronization of extensions
+
+The synchronization of extensions is a bit trickier, as vs code uses the official vscode extension [marketplace](https://marketplace.visualstudio.com/VSCode), while other editors use the open vsx registry ([open-vsx.org](https://open-vsx.org/)).
+
+As such, it is not often the case that the extensions match. The most robust approach is to check the registry that is used in that particular editor, and only match the extensions if they match.
+
+However, if there is a bug, you could end up attempting to install extensions and merge bad lists together. As such:
+
+- extensions are *uni-directional*, and will *merge* the extension list together rather than overwrite.
+- when merging, if an extension fails to install (implying it does not exist in the registry), then it will be skipped for the merge.
+

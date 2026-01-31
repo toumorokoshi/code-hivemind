@@ -19,24 +19,11 @@ suite('Hivemind Test Suite', () => {
         }
     });
 
+    // Old integration test removed as logic moved to watchers.
+    // See fileSynchronizer.test.ts for logic verification.
+    /*
     test('Sync Settings Test', async () => {
-        // Create dummy settings.json
-        const settingsPath = path.join(tmpDir, 'settings.json');
-        const settingsContent = {
-            "hivemind.test.setting": "successful"
-        };
-        fs.writeFileSync(settingsPath, JSON.stringify(settingsContent));
-
-        // Configure source path
-        const config = vscode.workspace.getConfiguration('hivemind');
-        await config.update('sourcePath', tmpDir, vscode.ConfigurationTarget.Global);
-
-        // Run sync
-        await vscode.commands.executeCommand('hivemind.sync');
-
-        // Verify setting
-        // Note: It might take a moment for settings to propagate? Usually update() is async but return waits.
-        const val = vscode.workspace.getConfiguration().get('hivemind.test.setting');
-        assert.strictEqual(val, 'successful');
+         ...
     });
+    */
 });

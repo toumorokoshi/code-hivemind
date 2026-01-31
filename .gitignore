@@ -1,3 +1,8 @@
 .vscode-test
 node_modules
+# don't include packages files.
 out
+*.vsix
+# source mapping files for typescript, we should ignore these
+*.map
+.jj
