@@ -2,6 +2,11 @@
   "name": "vscode-hivemind",
   "displayName": "VSCode Hivemind",
   "description": "Synchronize settings from another editor instance",
+  "publisher": "yft",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toumorokoshi/vscode-hivemind"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
@@ -24,7 +29,7 @@
         "hivemind.sourcePath": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to the user data directory of the source editor (e.g. ~/.config/Code/User). If empty, sync will not run."
+          "description": "Absolute path to the user data directory of the source editor (e.g. ~/.config/Code/User). If empty, the default directory for vscode for your operating system will be used."
         }
       }
     }
@@ -36,7 +41,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "package": "npx @vscode/vsce package --allow-missing-repository"
+    "package": "npx @vscode/vsce package"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
