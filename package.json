@@ -1,6 +1,6 @@
 {
   "name": "code-hivemind",
-  "displayName": "VSCode Hivemind",
+  "displayName": "Code Hivemind",
   "description": "Synchronize settings from another editor instance",
   "publisher": "yft",
   "repository": {
