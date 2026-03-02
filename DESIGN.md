@@ -18,6 +18,7 @@ The proposal is to produce a code-hivemind extension that allows one editor to t
 ### User journeys
 
 - As a user of an editor, I should be able to install my extension and use one of vscode, cursor, or antigravity settings as the source of truth.
+- As a user of the hivemind, I want to synchronize explicitly in one direction or the other to override implicit synchronization behavior (such as when the editor does not recognize an update).
 
 ### Scope
 
@@ -54,6 +55,14 @@ As such, it is not often the case that the extensions match. The most robust app
 
 However, if there is a bug, you could end up attempting to install extensions and merge bad lists together. As such:
 
-- extensions are *uni-directional*, and will *merge* the extension list together rather than overwrite.
+- extensions are _uni-directional_, and will _merge_ the extension list together rather than overwrite.
 - when merging, if an extension fails to install (implying it does not exist in the registry), then it will be skipped for the merge.
 
+### Logging and output
+
+This extension creates it's own output, to help simplify debugging.
+
+It logs:
+
+- source and target directories selected.
+- synchronization history.

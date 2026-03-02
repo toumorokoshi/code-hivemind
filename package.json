@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/toumorokoshi/code-hivemind"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -21,6 +21,14 @@
       {
         "command": "hivemind.sync",
         "title": "Hivemind: Sync"
+      },
+      {
+        "command": "hivemind.syncSourceToTarget",
+        "title": "Hivemind: Sync Source → Target"
+      },
+      {
+        "command": "hivemind.syncTargetToSource",
+        "title": "Hivemind: Sync Target → Source"
       }
     ],
     "configuration": {
