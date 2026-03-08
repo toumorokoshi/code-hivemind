@@ -42,19 +42,22 @@ export class FileSynchronizer {
   }
 
   private watch(source: string, target: string, direction: string) {
-    if (!fs.existsSync(source)) {
+    const dir = path.dirname(source);
+    const filename = path.basename(source);
+
+    if (!fs.existsSync(dir)) {
       return;
     }
 
     try {
-      const watcher = fs.watch(source, (eventType) => {
-        if (eventType === "change") {
+      const watcher = fs.watch(dir, (eventType, changedFile) => {
+        if (changedFile === filename) {
           this.sync(source, target, direction);
         }
       });
       this.watchers.push(watcher);
     } catch (err) {
-      log.appendLine(`[${this.name}] Failed to watch ${source}: ${err}`);
+      log.appendLine(`[${this.name}] Failed to watch ${dir}: ${err}`);
     }
   }
 

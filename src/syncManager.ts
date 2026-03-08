@@ -26,7 +26,11 @@ export class SyncManager {
     let sourcePath = config.get<string>("sourcePath");
 
     if (!sourcePath) {
-      sourcePath = this.getDefaultSourcePath();
+      sourcePath = SyncManager.getDefaultSourcePath(
+        process.platform,
+        os.homedir(),
+        process.env.APPDATA,
+      );
       log.appendLine(`No source path configured. Using default: ${sourcePath}`);
     }
 
@@ -147,9 +151,12 @@ export class SyncManager {
     );
   }
 
-  private getDefaultSourcePath(): string | undefined {
-    const homeDir = os.homedir();
-    switch (process.platform) {
+  public static getDefaultSourcePath(
+    platform: string,
+    homeDir: string,
+    appData?: string,
+  ): string | undefined {
+    switch (platform) {
       case "darwin":
         return path.join(
           homeDir,
@@ -160,7 +167,7 @@ export class SyncManager {
         );
       case "win32":
         return path.join(
-          process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
+          appData || path.join(homeDir, "AppData", "Roaming"),
           "Code",
           "User",
         );
