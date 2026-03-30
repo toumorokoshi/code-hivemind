@@ -4,6 +4,13 @@ import * as path from "path";
 import * as os from "os";
 import { FileSynchronizer } from "./fileSynchronizer";
 import { syncExtensions } from "./synchronizers/extensions";
+import {
+  syncSkills,
+  resolveSkillPaths,
+  syncSkillsDir,
+  DEFAULT_SKILLS_SUBDIR,
+  GEMINI_SKILLS_SUBDIR,
+} from "./synchronizers/skills";
 import { log } from "./log";
 
 interface ResolvedPaths {
@@ -84,6 +91,15 @@ export class SyncManager {
     this.keybindingsSync.start();
 
     await syncExtensions(paths.sourcePath);
+
+    log.appendLine("Syncing Skills (Source -> Target)");
+    await syncSkills(
+      os.homedir(),
+      vscode.env.appName,
+      vscode.workspace
+        .getConfiguration("hivemind")
+        .get<string>("skillsSourcePath"),
+    );
   }
 
   public stop() {
@@ -122,6 +138,15 @@ export class SyncManager {
       paths.targetKeybindings,
     );
     await syncExtensions(paths.sourcePath);
+
+    log.appendLine("Syncing Skills (Source -> Target)");
+    await syncSkills(
+      os.homedir(),
+      vscode.env.appName,
+      vscode.workspace
+        .getConfiguration("hivemind")
+        .get<string>("skillsSourcePath"),
+    );
   }
 
   public async syncTargetToSource() {
@@ -149,6 +174,16 @@ export class SyncManager {
       paths.targetKeybindings,
       paths.sourceKeybindings,
     );
+
+    log.appendLine("Syncing Skills (Target -> Source)");
+    const { targetDir, sourceDir } = resolveSkillPaths(
+      os.homedir(),
+      vscode.env.appName,
+      vscode.workspace
+        .getConfiguration("hivemind")
+        .get<string>("skillsSourcePath"),
+    );
+    await syncSkillsDir(targetDir, sourceDir);
   }
 
   public static getDefaultSourcePath(

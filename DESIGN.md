@@ -29,10 +29,12 @@ The proposed scope includes:
 - extensions
 - debug configurations
 - workspace settings
+- agent skills
 
 The scope does not include:
 
 - editor-specific configuration (e.g. antigravity's agent manager settings).
+- agent rules (GEMINI.md, CLAUDE.md, .cursorrules) — these are distinct from skills and are not synchronized.
 
 ## Implementation details
 
@@ -57,6 +59,23 @@ However, if there is a bug, you could end up attempting to install extensions an
 
 - extensions are _uni-directional_, and will _merge_ the extension list together rather than overwrite.
 - when merging, if an extension fails to install (implying it does not exist in the registry), then it will be skipped for the merge.
+
+### Synchronization of agent skills
+
+Agent skills are an open standard where each skill is a directory containing a `SKILL.md` file (with YAML frontmatter and markdown instructions) and optional support resources (`scripts/`, `references/`, `assets/`). Skills are distinct from rules — rules are persistent static context (e.g. GEMINI.md, CLAUDE.md), while skills are modular, invocable workflows.
+
+The extension synchronizes **Agent Skills** from a source to the current editor's global skills directory.
+
+- **Source**: Configurable via `hivemind.skillsSourcePath` (default: `~/.agents/skills`).
+- **Target**: Automatically detected based on the running editor (`vscode.env.appName`):
+    - **Antigravity** -> `~/.gemini/skills/`
+    - **Cursor** -> `~/.cursor/skills/`
+    - **Visual Studio Code** -> `~/.agents/skills/`
+- **Strategy**: 
+    - Mirror skills between source and target (bi-directional merge, on-demand).
+    - Skills only present in target (or source, when syncing back) are left alone (not deleted).
+    - Identical skills are skipped.
+    - `~` in `skillsSourcePath` is expanded to the home directory.
 
 ### Logging and output
 

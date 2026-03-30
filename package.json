@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/toumorokoshi/code-hivemind"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -40,6 +40,11 @@
           "type": "string",
           "default": "",
           "description": "Absolute path to the user data directory of the source editor (e.g. ~/.config/Code/User). If empty, the default directory for vscode for your operating system will be used."
+        },
+        "hivemind.skillsSourcePath": {
+          "type": "string",
+          "default": "~/.agents/skills",
+          "description": "Absolute path to the source global skills directory. Defaults to ~/.agents/skills."
         }
       }
     }
