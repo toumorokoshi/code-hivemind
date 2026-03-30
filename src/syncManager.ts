@@ -11,6 +11,7 @@ import {
   DEFAULT_SKILLS_SUBDIR,
   GEMINI_SKILLS_SUBDIR,
 } from "./synchronizers/skills";
+import { SkillsSynchronizer } from "./skillsSynchronizer";
 import { log } from "./log";
 
 interface ResolvedPaths {
@@ -25,6 +26,7 @@ interface ResolvedPaths {
 export class SyncManager {
   private settingsSync?: FileSynchronizer;
   private keybindingsSync?: FileSynchronizer;
+  private skillsSync?: SkillsSynchronizer;
 
   constructor(private context: vscode.ExtensionContext) {}
 
@@ -90,6 +92,14 @@ export class SyncManager {
     this.settingsSync.start();
     this.keybindingsSync.start();
 
+    const config = vscode.workspace.getConfiguration("hivemind");
+    this.skillsSync = new SkillsSynchronizer(
+      os.homedir(),
+      vscode.env.appName,
+      config.get<string>("skillsSourcePath"),
+    );
+    this.skillsSync.start();
+
     await syncExtensions(paths.sourcePath);
 
     log.appendLine("Syncing Skills (Source -> Target)");
@@ -105,6 +115,7 @@ export class SyncManager {
   public stop() {
     this.settingsSync?.stop();
     this.keybindingsSync?.stop();
+    this.skillsSync?.stop();
   }
 
   public async sync() {

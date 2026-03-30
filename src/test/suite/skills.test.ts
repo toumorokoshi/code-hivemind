@@ -8,6 +8,7 @@ import {
   syncSkills,
   syncSkillsDir,
 } from "../../synchronizers/skills";
+import { SkillsSynchronizer } from "../../skillsSynchronizer";
 
 suite("Skills Synchronizer Test Suite", () => {
   suite("resolveSkillPaths", () => {
@@ -173,7 +174,106 @@ suite("Skills Synchronizer Test Suite", () => {
       await syncSkillsDir(dirA, dirB);
 
       assert.ok(fs.existsSync(path.join(dirB, "skillA", "SKILL.md")));
-      assert.strictEqual(fs.readFileSync(path.join(dirB, "skillA", "SKILL.md"), "utf8"), "contentA");
+      assert.strictEqual(
+        fs.readFileSync(path.join(dirB, "skillA", "SKILL.md"), "utf8"),
+        "contentA",
+      );
+    });
+  });
+
+  suite("SkillsSynchronizer (Watcher) Test Suite", () => {
+    let tmpDir: string;
+    let sourceDir: string;
+    let targetDir: string;
+
+    setup(() => {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "hivemind-sync-test-"));
+      sourceDir = path.join(tmpDir, "source");
+      targetDir = path.join(tmpDir, "target");
+      fs.mkdirSync(sourceDir, { recursive: true });
+      fs.mkdirSync(targetDir, { recursive: true });
+    });
+
+    teardown(() => {
+      if (tmpDir && fs.existsSync(tmpDir)) {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("detects change and syncs from source to target", async () => {
+      // Create an initial skill
+      const skillDir = path.join(sourceDir, "skill1");
+      fs.mkdirSync(skillDir, { recursive: true });
+      const skillFile = path.join(skillDir, "SKILL.md");
+      fs.writeFileSync(skillFile, "initial content");
+
+      const synchronizer = new SkillsSynchronizer(
+        tmpDir,
+        "Antigravity",
+        sourceDir,
+      );
+
+      // Antigravity target is .gemini/skills
+      const expectedTargetBase = path.join(tmpDir, ".gemini", "skills");
+      const expectedTargetFile = path.join(
+        expectedTargetBase,
+        "skill1",
+        "SKILL.md",
+      );
+
+      synchronizer.start();
+
+      try {
+        // Modify the source file
+        fs.writeFileSync(skillFile, "updated content");
+
+        // Wait for debounce (500ms) + some buffer
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        assert.ok(
+          fs.existsSync(expectedTargetFile),
+          "Target file should exist after sync",
+        );
+        assert.strictEqual(
+          fs.readFileSync(expectedTargetFile, "utf8"),
+          "updated content",
+        );
+      } finally {
+        synchronizer.stop();
+      }
+    });
+
+    test("detects new skill creation", async () => {
+      const synchronizer = new SkillsSynchronizer(
+        tmpDir,
+        "Antigravity",
+        sourceDir,
+      );
+      const expectedTargetFile = path.join(
+        tmpDir,
+        ".gemini",
+        "skills",
+        "new-skill",
+        "SKILL.md",
+      );
+
+      synchronizer.start();
+
+      try {
+        const newSkillDir = path.join(sourceDir, "new-skill");
+        fs.mkdirSync(newSkillDir, { recursive: true });
+        fs.writeFileSync(path.join(newSkillDir, "SKILL.md"), "new skill");
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        assert.ok(fs.existsSync(expectedTargetFile));
+        assert.strictEqual(
+          fs.readFileSync(expectedTargetFile, "utf8"),
+          "new skill",
+        );
+      } finally {
+        synchronizer.stop();
+      }
     });
   });
 });
