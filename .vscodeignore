@@ -6,3 +6,6 @@ tsconfig.json
 **/*.map
 **/*.ts
 .jj/**
+spec/**
+design/**
+scripts/**
