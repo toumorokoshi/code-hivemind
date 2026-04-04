@@ -4,7 +4,8 @@ import * as vscode from "vscode";
 import { log } from "../log";
 
 export const DEFAULT_SKILLS_SUBDIR = ".agents/skills";
-export const GEMINI_SKILLS_SUBDIR = ".gemini/skills";
+// see https://antigravity.google/docs/skills
+export const GEMINI_SKILLS_SUBDIR = ".gemini/antigravity/skills";
 
 const EDITOR_SKILL_DIRS: Record<string, string> = {
   Antigravity: GEMINI_SKILLS_SUBDIR,
