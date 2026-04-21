@@ -37,14 +37,16 @@
       "title": "Hivemind",
       "properties": {
         "hivemind.sourcePath": {
-          "type": "string",
-          "default": "",
-          "description": "Absolute path to the user data directory of the source editor (e.g. ~/.config/Code/User). If empty, the default directory for vscode for your operating system will be used."
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "List of absolute paths to the user data directory of the source editor (e.g. ~/.config/Code/User). The first path that exists on the filesystem will be used. If empty, the default directory for vscode for your operating system will be used."
         },
         "hivemind.skillsSourcePath": {
-          "type": "string",
-          "default": "~/.agents/skills",
-          "description": "Absolute path to the source global skills directory. Defaults to ~/.agents/skills."
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["~/.agents/skills"],
+          "description": "List of absolute paths to the source global skills directory. The first path that exists on the filesystem will be used. Defaults to [\"~/.agents/skills\"]."
         }
       }
     }

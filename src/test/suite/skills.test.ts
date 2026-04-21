@@ -15,7 +15,7 @@ suite("Skills Synchronizer Test Suite", () => {
     const homeDir = "/home/testuser";
 
     test("Antigravity appName returns gemini dir as target", () => {
-      const result = resolveSkillPaths(homeDir, "Antigravity", "~/.agents/skills");
+      const result = resolveSkillPaths(homeDir, "Antigravity", ["~/.agents/skills"]);
       assert.strictEqual(
         result.sourceDir,
         path.join(homeDir, ".agents", "skills"),
@@ -27,7 +27,7 @@ suite("Skills Synchronizer Test Suite", () => {
     });
 
     test("Cursor appName returns cursor dir as target", () => {
-      const result = resolveSkillPaths(homeDir, "Cursor", "/custom/skills");
+      const result = resolveSkillPaths(homeDir, "Cursor", ["/custom/skills"]);
       assert.strictEqual(result.sourceDir, "/custom/skills");
       assert.strictEqual(
         result.targetDir,
@@ -36,7 +36,7 @@ suite("Skills Synchronizer Test Suite", () => {
     });
 
     test("Default appName returns .agents/skills as target", () => {
-      const result = resolveSkillPaths(homeDir, "Unknown Editor", "/custom/skills");
+      const result = resolveSkillPaths(homeDir, "Unknown Editor", ["/custom/skills"]);
       assert.strictEqual(
         result.targetDir,
         path.join(homeDir, ".agents", "skills"),
@@ -44,13 +44,12 @@ suite("Skills Synchronizer Test Suite", () => {
     });
 
     test("expands ~ in sourceDir", () => {
-      const result = resolveSkillPaths(homeDir, "Antigravity", "~/my-skills");
+      const result = resolveSkillPaths(homeDir, "Antigravity", ["~/my-skills"]);
       assert.strictEqual(result.sourceDir, path.join(homeDir, "my-skills"));
     });
 
     test("Symmetrical default for VS Code (syncing from Gemini)", () => {
-      // Logic from SyncManager: if appName is VS Code, default source is GEMINI_SKILLS_SUBDIR
-      const result = resolveSkillPaths(homeDir, "Visual Studio Code", "~/.gemini/skills");
+      const result = resolveSkillPaths(homeDir, "Visual Studio Code", ["~/.gemini/skills"]);
       assert.strictEqual(result.sourceDir, path.join(homeDir, ".gemini", "skills"));
       assert.strictEqual(result.targetDir, path.join(homeDir, ".agents", "skills"));
     });
@@ -63,6 +62,29 @@ suite("Skills Synchronizer Test Suite", () => {
       // Antigravity -> VS Code
       const antiResult = resolveSkillPaths(homeDir, "Antigravity");
       assert.strictEqual(antiResult.sourceDir, path.join(homeDir, ".agents", "skills"));
+    });
+
+    test("picks first existing path from array", () => {
+      // Create a temp dir to simulate an existing path
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "hivemind-skills-resolve-"));
+      try {
+        const result = resolveSkillPaths(homeDir, "Antigravity", [
+          "/nonexistent/path1",
+          tmpDir,
+          "/nonexistent/path2",
+        ]);
+        assert.strictEqual(result.sourceDir, tmpDir);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("falls back to first entry when no paths exist", () => {
+      const result = resolveSkillPaths(homeDir, "Antigravity", [
+        "/nonexistent/first",
+        "/nonexistent/second",
+      ]);
+      assert.strictEqual(result.sourceDir, "/nonexistent/first");
     });
   });
 
@@ -131,7 +153,7 @@ suite("Skills Synchronizer Test Suite", () => {
       fs.writeFileSync(path.join(sourceSkillDir, "SKILL.md"), "content");
 
       // Antigravity -> .gemini/skills
-      await syncSkills(tmpDir, "Antigravity", sourceDir);
+      await syncSkills(tmpDir, "Antigravity", [sourceDir]);
 
       const targetPath = path.join(tmpDir, ".gemini", "skills", "my-skill", "SKILL.md");
       assert.ok(fs.existsSync(targetPath));
@@ -144,7 +166,7 @@ suite("Skills Synchronizer Test Suite", () => {
       fs.writeFileSync(path.join(targetDir, "skill1", "SKILL.md"), "original");
 
       // Using the target dir as source in Antigravity should do nothing
-      await syncSkills(tmpDir, "Antigravity", targetDir);
+      await syncSkills(tmpDir, "Antigravity", [targetDir]);
       
       // No errors, skipped log would be seen in output
       assert.ok(fs.existsSync(path.join(targetDir, "skill1", "SKILL.md")));
@@ -160,7 +182,7 @@ suite("Skills Synchronizer Test Suite", () => {
       fs.mkdirSync(targetOnlyDir, { recursive: true });
       fs.writeFileSync(path.join(targetOnlyDir, "SKILL.md"), "target only");
 
-      await syncSkills(tmpDir, "Antigravity", sourceDir);
+      await syncSkills(tmpDir, "Antigravity", [sourceDir]);
 
       assert.ok(fs.existsSync(path.join(targetOnlyDir, "SKILL.md")));
     });
@@ -210,7 +232,7 @@ suite("Skills Synchronizer Test Suite", () => {
       const synchronizer = new SkillsSynchronizer(
         tmpDir,
         "Antigravity",
-        sourceDir,
+        [sourceDir],
       );
 
       // Antigravity target is .gemini/skills
@@ -247,7 +269,7 @@ suite("Skills Synchronizer Test Suite", () => {
       const synchronizer = new SkillsSynchronizer(
         tmpDir,
         "Antigravity",
-        sourceDir,
+        [sourceDir],
       );
       const expectedTargetFile = path.join(
         tmpDir,

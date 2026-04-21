@@ -12,14 +12,14 @@ export class SkillsSynchronizer {
   constructor(
     private readonly homeDir: string,
     private readonly appName: string,
-    private readonly configSourceDir?: string,
+    private readonly configSourceDirs?: string[],
   ) {}
 
   public start() {
     const { sourceDir, targetDir } = resolveSkillPaths(
       this.homeDir,
       this.appName,
-      this.configSourceDir,
+      this.configSourceDirs,
     );
 
     if (sourceDir === targetDir) {
@@ -108,7 +108,7 @@ export class SkillsSynchronizer {
       const { sourceDir, targetDir } = resolveSkillPaths(
         this.homeDir,
         this.appName,
-        this.configSourceDir,
+        this.configSourceDirs,
       );
 
       if (label === "Source->Target") {

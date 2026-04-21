@@ -32,7 +32,9 @@ export class SyncManager {
 
   private resolvePaths(): ResolvedPaths | undefined {
     const config = vscode.workspace.getConfiguration("hivemind");
-    let sourcePath = config.get<string>("sourcePath");
+    const sourcePaths = config.get<string[]>("sourcePath") || [];
+
+    let sourcePath = SyncManager.resolveFirstExistingPath(sourcePaths);
 
     if (!sourcePath) {
       sourcePath = SyncManager.getDefaultSourcePath(
@@ -40,7 +42,7 @@ export class SyncManager {
         os.homedir(),
         process.env.APPDATA,
       );
-      log.appendLine(`No source path configured. Using default: ${sourcePath}`);
+      log.appendLine(`No valid source path configured. Using default: ${sourcePath}`);
     }
 
     if (!sourcePath || !fs.existsSync(sourcePath)) {
@@ -93,23 +95,18 @@ export class SyncManager {
     this.keybindingsSync.start();
 
     const config = vscode.workspace.getConfiguration("hivemind");
+    const skillsPaths = config.get<string[]>("skillsSourcePath") || [];
     this.skillsSync = new SkillsSynchronizer(
       os.homedir(),
       vscode.env.appName,
-      config.get<string>("skillsSourcePath"),
+      skillsPaths,
     );
     this.skillsSync.start();
 
     await syncExtensions(paths.sourcePath);
 
     log.appendLine("Syncing Skills (Source -> Target)");
-    await syncSkills(
-      os.homedir(),
-      vscode.env.appName,
-      vscode.workspace
-        .getConfiguration("hivemind")
-        .get<string>("skillsSourcePath"),
-    );
+    await syncSkills(os.homedir(), vscode.env.appName, skillsPaths);
   }
 
   public stop() {
@@ -151,13 +148,10 @@ export class SyncManager {
     await syncExtensions(paths.sourcePath);
 
     log.appendLine("Syncing Skills (Source -> Target)");
-    await syncSkills(
-      os.homedir(),
-      vscode.env.appName,
-      vscode.workspace
-        .getConfiguration("hivemind")
-        .get<string>("skillsSourcePath"),
-    );
+    const skillsPaths2 = vscode.workspace
+      .getConfiguration("hivemind")
+      .get<string[]>("skillsSourcePath") || [];
+    await syncSkills(os.homedir(), vscode.env.appName, skillsPaths2);
   }
 
   public async syncTargetToSource() {
@@ -187,14 +181,27 @@ export class SyncManager {
     );
 
     log.appendLine("Syncing Skills (Target -> Source)");
+    const skillsPaths = vscode.workspace
+      .getConfiguration("hivemind")
+      .get<string[]>("skillsSourcePath") || [];
     const { targetDir, sourceDir } = resolveSkillPaths(
       os.homedir(),
       vscode.env.appName,
-      vscode.workspace
-        .getConfiguration("hivemind")
-        .get<string>("skillsSourcePath"),
+      skillsPaths,
     );
     await syncSkillsDir(targetDir, sourceDir);
+  }
+
+  public static resolveFirstExistingPath(paths: string[]): string | undefined {
+    for (const p of paths) {
+      const expanded = p.startsWith("~")
+        ? path.join(os.homedir(), p.slice(1))
+        : p;
+      if (fs.existsSync(expanded)) {
+        return expanded;
+      }
+    }
+    return undefined;
   }
 
   public static getDefaultSourcePath(

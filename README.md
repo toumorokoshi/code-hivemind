@@ -23,13 +23,30 @@ current editor.
 
 1.  Open VS Code Settings (`Ctrl+,`).
 2.  Search for `Hivemind`.
-3.  Set `Hivemind: Source Path` to the absolute path of the **User Data
-    Directory** of the source editor.
+3.  Set `Hivemind: Source Path` to a list of absolute paths to the **User Data
+    Directory** of the source editor. The first path that exists on the
+    filesystem will be used. If the list is empty, the default VS Code directory
+    for your operating system is used.
 
-    **Examples:**
-    - **Linux (VS Code)**: `/home/user/.config/Code/User`
-    - **Mac (VS Code)**: `/Users/user/Library/Application Support/Code/User`
-    - **Windows (VS Code)**: `C:\Users\user\AppData\Roaming\Code\User`
+    **Example:**
+    ```json
+    "hivemind.sourcePath": [
+      "/home/user/.config/Code/User",
+      "/home/user/.config/Code - Insiders/User"
+    ]
+    ```
+
+4.  Optionally set `Hivemind: Skills Source Path` to a list of absolute paths
+    to the source global skills directory. The first path that exists on the
+    filesystem will be used. Defaults to `["~/.agents/skills"]`.
+
+    **Example:**
+    ```json
+    "hivemind.skillsSourcePath": [
+      "~/.agents/skills",
+      "~/.gemini/skills"
+    ]
+    ```
 
 ## Usage
 

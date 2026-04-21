@@ -18,12 +18,30 @@ export interface SkillPaths {
   targetDir: string;
 }
 
+function expandTilde(p: string, homeDir: string): string {
+  return p.startsWith("~") ? path.join(homeDir, p.slice(1)) : p;
+}
+
 export function resolveSkillPaths(
   homeDir: string,
   appName: string,
-  configSourceDir?: string,
+  configSourceDirs?: string[],
 ): SkillPaths {
-  let sourcePath = configSourceDir;
+  let sourcePath: string | undefined;
+
+  if (configSourceDirs && configSourceDirs.length > 0) {
+    for (const dir of configSourceDirs) {
+      const expanded = expandTilde(dir, homeDir);
+      if (fs.existsSync(expanded)) {
+        sourcePath = expanded;
+        break;
+      }
+    }
+    // If none exist, use the first entry (expanded) as fallback
+    if (!sourcePath) {
+      sourcePath = expandTilde(configSourceDirs[0], homeDir);
+    }
+  }
 
   if (!sourcePath) {
     // Symmetrical default: if in VS Code, target Gemini. In Gemini, target VS Code.
@@ -32,9 +50,6 @@ export function resolveSkillPaths(
         ? GEMINI_SKILLS_SUBDIR
         : DEFAULT_SKILLS_SUBDIR;
     sourcePath = path.join(homeDir, sourceSubDir);
-  } else if (sourcePath.startsWith("~")) {
-    // Expand ~ if present in configSourceDir
-    sourcePath = path.join(homeDir, sourcePath.slice(1));
   }
 
   const targetSubDir = EDITOR_SKILL_DIRS[appName] || DEFAULT_SKILLS_SUBDIR;
@@ -131,12 +146,12 @@ function writeSkillToDirectory(
 export async function syncSkills(
   homeDir: string,
   appName: string,
-  configSourceDir?: string,
+  configSourceDirs?: string[],
 ) {
   const { sourceDir, targetDir } = resolveSkillPaths(
     homeDir,
     appName,
-    configSourceDir,
+    configSourceDirs,
   );
 
   await syncSkillsDir(sourceDir, targetDir);
